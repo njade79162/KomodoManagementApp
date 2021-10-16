@@ -13,6 +13,7 @@ namespace Komodo_Repository
         public int IDNum { get; set; }
         // need to know if they have access to Pluralsight
         public bool PluralsightAccess { get; set; }
+
         // default constructor
         public Developer()
         {
