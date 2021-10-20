@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Komodo_Repository
 {
-    class DeveloperRepo
+    public class DeveloperRepo
     {
         // list of developers
         private readonly List<Developer> _developerDirectory = new List<Developer>();
@@ -21,7 +21,7 @@ namespace Komodo_Repository
         }
 
         // get a single developer by name
-        public Developer GetDeveloperByName(string name)
+        public Developer GetDeveloper(string name)
         {
             foreach(Developer dev in _developerDirectory)
             {
@@ -34,8 +34,87 @@ namespace Komodo_Repository
         }
 
         // get a single developer by ID
+        public Developer GetDeveloper(int ID)
+        {
+            foreach(Developer dev in _developerDirectory)
+            {
+                if(dev.IDNum == ID)
+                {
+                    return dev;
+                }
+            }
+            return null;
+        }
+
+        // get a developer that matches both name and ID
+        public Developer GetDeveloper(string name, int ID)
+        {
+            foreach(Developer dev in _developerDirectory)
+            {
+                if(dev.IDNum == ID && dev.Name == name)
+                {
+                    return dev;
+                }
+            }
+            return null;
+        }
+
         // get the full directory of developers
-        // update a single developer
+        public List<Developer> GetDevDirectory()
+        {
+            return _developerDirectory;
+        }
+
+        // update a single developer, with overloaded methods to find developer based on name, id, or both
+        public bool UpdateDeveloper(int oldID, Developer newDev)
+        {
+            Developer oldDev = GetDeveloper(oldID);
+
+            if(oldDev != null)
+            {
+                oldDev.Name = newDev.Name;
+                oldDev.IDNum = newDev.IDNum;
+                oldDev.PluralsightAccess = newDev.PluralsightAccess;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool UpdateDeveloper(string oldName, Developer newDev)
+        {
+            Developer oldDev = GetDeveloper(oldName);
+
+            if (oldDev != null)
+            {
+                oldDev.Name = newDev.Name;
+                oldDev.IDNum = newDev.IDNum;
+                oldDev.PluralsightAccess = newDev.PluralsightAccess;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool UpdateDeveloper(string oldName, int oldID, Developer newDev)
+        {
+            Developer oldDev = GetDeveloper(oldName, oldID);
+
+            if (oldDev != null)
+            {
+                oldDev.Name = newDev.Name;
+                oldDev.IDNum = newDev.IDNum;
+                oldDev.PluralsightAccess = newDev.PluralsightAccess;
+                return true;
+            }
+
+            return false;
+        }
+
         // remove a developer from directory
+        public bool RemoveDev(Developer currentDev)
+        {
+            return _developerDirectory.Remove(currentDev);
+        }
     }
 }
