@@ -24,7 +24,7 @@ namespace Komodo_Repository
         {
             foreach(DevTeam team in _devTeamDirectory)
             {
-                if(team.TeamName == name)
+                if(team.TeamName.ToLower() == name.ToLower())
                 {
                     return team;
                 }

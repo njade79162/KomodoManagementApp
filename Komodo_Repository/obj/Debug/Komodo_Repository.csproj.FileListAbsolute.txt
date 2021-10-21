@@ -1,0 +1,6 @@
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\bin\Debug\Komodo_Repository.dll
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\bin\Debug\Komodo_Repository.pdb
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\obj\Debug\Komodo_Repository.csproj.AssemblyReference.cache
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\obj\Debug\Komodo_Repository.csproj.CoreCompileInputs.cache
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\obj\Debug\Komodo_Repository.dll
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\Komodo_Repository\obj\Debug\Komodo_Repository.pdb

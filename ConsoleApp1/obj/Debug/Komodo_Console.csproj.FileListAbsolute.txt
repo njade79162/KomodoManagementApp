@@ -1,0 +1,10 @@
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\bin\Debug\ConsoleApp1.exe.config
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\bin\Debug\ConsoleApp1.exe
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\bin\Debug\ConsoleApp1.pdb
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\bin\Debug\Komodo_Repository.dll
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\bin\Debug\Komodo_Repository.pdb
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\obj\Debug\Komodo_Console.csproj.AssemblyReference.cache
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\obj\Debug\Komodo_Console.csproj.CoreCompileInputs.cache
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\obj\Debug\Komodo_Console.csproj.CopyComplete
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\obj\Debug\ConsoleApp1.exe
+C:\Users\slack\Desktop\ElevenFiftyProjects\GoldBadge\KomodoManagementApp\ConsoleApp1\obj\Debug\ConsoleApp1.pdb

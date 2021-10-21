@@ -51,7 +51,7 @@ namespace Komodo_Repository
         {
             foreach(Developer dev in _developerDirectory)
             {
-                if(dev.IDNum == ID && dev.Name == name)
+                if(dev.IDNum == ID && dev.Name.ToLower() == name.ToLower())
                 {
                     return dev;
                 }
