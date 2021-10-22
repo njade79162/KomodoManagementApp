@@ -9,9 +9,11 @@ namespace Komodo_Console
 {
     class ProgramUI
     {
+        // repositories of developers and dev teams
         protected readonly DeveloperRepo _devRepo = new DeveloperRepo();
         protected readonly DevTeamRepo _devTeamRepo = new DevTeamRepo();
 
+        // creates initial developers and dev teams
         public void InitializeDevsAndTeams()
         {
             _devRepo.AddDeveloperToDirectory(new Developer("John Smith", 58374, true));
@@ -31,7 +33,7 @@ namespace Komodo_Console
             _devTeamRepo.CreateDevTeam(new DevTeam(teamTwoMembers, "Team Two", 4019234));
         }
 
-        // method that lists all developers
+        // lists all developers in a given list
         public void ListDevelopers(List<Developer> devList)
         {
             int count = 1;
@@ -45,6 +47,7 @@ namespace Komodo_Console
             }
         }
 
+        // lists all dev teams in the repository
         public void ListDevTeams()
         {
             int count = 1;
@@ -62,95 +65,251 @@ namespace Komodo_Console
             }
         }
 
+        // reusable "press key to continue"
         public void PressAnyKey()
         {
             Console.WriteLine("Press any key to continue....");
             Console.ReadKey();
-            Console.WriteLine();
+            Console.Clear();
         }
-        
+
+        // reusable error message
         public void InvalidValueMessage()
         {
             Console.WriteLine("That is not one of the accepted options. Please try again.");
             PressAnyKey();
         }
 
-        public DevTeam GetTeam()
+        // initial setup, ask what user wants to do
+        public int InitialAction()
         {
-            Console.WriteLine("Teams: ");
+            Console.WriteLine("What would you like to do?");
+            Console.WriteLine("1: Edit teams \n" +
+                "2: Add developers to directory \n" +
+                "3: List all developers \n" +
+                "4: List developers that need a Pluralsight license \n" +
+                "5: Exit");
             Console.WriteLine();
-            ListDevTeams();
-            Console.WriteLine("Please enter the number of the team you would like to edit, or enter 0 to make a new team.");
             string input = Console.ReadLine();
-            int intInput;
-            bool isNum = Int32.TryParse(input, out intInput);
+            Console.Clear();
+            bool isNum = Int32.TryParse(input, out int intInput);
             if (!isNum)
             {
-                Console.WriteLine("That was not a number. Please try again.");
-                PressAnyKey();
-                return null;
+                InvalidValueMessage();
             }
-            else if (intInput > _devTeamRepo.GetDevTeamDirectory().Count || intInput < 0)
+            else if (intInput > 5 || intInput < 1)
             {
-                Console.WriteLine("That was not a valid number. Please try again.");
-                PressAnyKey();
-            }
-            else if(intInput == 0)
-            {
-                Console.WriteLine("Please enter a name for this new team.");
-                string teamName = Console.ReadLine();
-                Console.WriteLine();
-                Console.WriteLine("Please enter an ID number for this new team.");
-                string idNumString = Console.ReadLine();
-                int idNum;
-                Console.WriteLine();
-                bool validNum = Int32.TryParse(idNumString, out idNum);
-                if (!validNum)
-                {
-                    Console.WriteLine("That was not a valid ID number. Please try again.");
-                    PressAnyKey();
-                    return null;
-                }
-                List<Developer> teamMembers = new List<Developer>();
-                DevTeam team = new DevTeam(teamMembers, teamName, idNum);
-                _devTeamRepo.CreateDevTeam(team);
-                Console.WriteLine($"Team {teamName} was created with ID {idNum}");
+                InvalidValueMessage();
             }
             else
             {
-                DevTeam team = _devTeamRepo.GetDevTeamDirectory()[intInput - 1];
-                bool confirmRun = true;
-                while (confirmRun)
+                return intInput;
+            }
+            return 0;
+        }
+
+        // create a developer object and add it to the directory
+        public void CreateDev()
+        {
+            Console.WriteLine("Please enter the new developer's name:");
+            Console.WriteLine();
+            string nameInput = Console.ReadLine();
+            Console.Clear();
+            bool isNum = false;
+            int intId = 0;
+            while (!isNum)
+            {
+                Console.WriteLine("Please enter the new developer's ID number:");
+                Console.WriteLine();
+                string idInput = Console.ReadLine();
+                Console.Clear();
+                isNum = Int32.TryParse(idInput, out int idInteger);
+                if (!isNum)
                 {
-                    Console.WriteLine($"You have selected the team named {team.TeamName} with an ID of {team.TeamID}. Is this correct? \n" +
-                        $"1: Yes \n" +
-                        $"2: No");
+                    Console.WriteLine("This is not a valid number. Please try again.");
+                    PressAnyKey();
+                }
+                intId = idInteger;
+            }
+            bool continueLoop = true;
+            bool pluralsightAccess = false;
+            while (continueLoop)
+            {
+                continueLoop = false;
+                Console.WriteLine("Does this developer have access to Pluralsight? \n" +
+                    "1: Yes \n" +
+                    "2: No");
+                Console.WriteLine();
+                string accessInput = Console.ReadLine();
+                Console.Clear();
+                switch (accessInput)
+                {
+                    case "1":
+                        pluralsightAccess = true;
+                        break;
+                    case "2":
+                        pluralsightAccess = false;
+                        break;
+                    default:
+                        InvalidValueMessage();
+                        continueLoop = true;
+                        break;
+                }
+            }
+            Developer dev = new Developer(nameInput, intId, pluralsightAccess);
+            Console.WriteLine($"Is all of this info correct? \n" +
+                $"\n" +
+                $"Name: {dev.Name} \n" +
+                $"ID Number: {dev.IDNum} \n" +
+                $"Pluralsight Access: {dev.PluralsightAccess}");
+            Console.WriteLine();
+            Console.WriteLine("1: Yes \n" +
+                "2: No");
+            Console.WriteLine();
+            string confirmInput = Console.ReadLine();
+            Console.Clear();
+            bool incorrectInput = true;
+            while (incorrectInput)
+            {
+                incorrectInput = false;
+                switch (confirmInput)
+                {
+                    case "1":
+                        _devRepo.AddDeveloperToDirectory(dev);
+                        Console.WriteLine("Added this developer to the directory.");
+                        PressAnyKey();
+                        break;
+                    case "2":
+                        Console.WriteLine("Returning to the start of the program....");
+                        PressAnyKey();
+                        break;
+                    default:
+                        InvalidValueMessage();
+                        incorrectInput = true;
+                        break;
+                }
+            }
+        }
+
+        // list developers that need a pluralsight license
+        public void ListDevelopersWithoutPluralsight()
+        {
+            List<Developer> PluralsightNeeded = new List<Developer>();
+            foreach(Developer dev in _devRepo.GetDevDirectory())
+            {
+                if (dev.PluralsightAccess == false)
+                {
+                    PluralsightNeeded.Add(dev);
+                }
+            }
+            Console.WriteLine("The following developers need a Pluralsight license:");
+            Console.WriteLine();
+            foreach(Developer dev in PluralsightNeeded)
+            {
+                Console.WriteLine($"Name: {dev.Name}");
+                Console.WriteLine($"ID Number: {dev.IDNum}");
+                Console.WriteLine();
+            }
+        }
+
+        // ask user what team they want to edit or allows them to make a new team
+        public DevTeam GetTeam()
+        {
+            bool continueRun = true;
+            while (continueRun)
+            {
+                Console.WriteLine("Teams: ");
+                Console.WriteLine();
+                ListDevTeams();
+                Console.WriteLine($"Please enter the number of the team you would like to edit, or enter 0 to make a new team. Enter {_devTeamRepo.GetDevTeamDirectory().Count + 1} to exit.");
+                Console.WriteLine();
+                string input = Console.ReadLine();
+                Console.Clear();
+                int intInput;
+                bool isNum = Int32.TryParse(input, out intInput);
+                if (!isNum)
+                {
+                    Console.WriteLine("That was not a number. Please try again.");
+                    PressAnyKey();
+                }
+                else if (intInput > _devTeamRepo.GetDevTeamDirectory().Count + 1 || intInput < 0)
+                {
+                    Console.WriteLine("That was not a valid number. Please try again.");
+                    PressAnyKey();
+                }
+                else if (intInput == 0)
+                {
+                    continueRun = false;
+                    Console.WriteLine("Please enter a name for this new team.");
                     Console.WriteLine();
-                    string confirmInput = Console.ReadLine();
-                    if (confirmInput != "1" && confirmInput != "2")
+                    string teamName = Console.ReadLine();
+                    Console.Clear();
+                    int idNum = 0;
+                    bool validNum = false;
+                    while (!validNum)
                     {
-                        Console.WriteLine("That is not a valid answer. Please try again.");
-                        PressAnyKey();
+                        Console.WriteLine("Please enter an ID number for this new team.");
+                        Console.WriteLine();
+                        string idNumString = Console.ReadLine();
+                        Console.Clear();
+                        validNum = Int32.TryParse(idNumString, out int numID);
+                        if (!validNum)
+                        {
+                            Console.WriteLine("That was not a valid ID number. Please try again.");
+                            PressAnyKey();
+                        }
+                        idNum = numID;
                     }
-                    else if (confirmInput == "1")
+                    List<Developer> teamMembers = new List<Developer>();
+                    DevTeam team = new DevTeam(teamMembers, teamName, idNum);
+                    _devTeamRepo.CreateDevTeam(team);
+                    Console.WriteLine($"A team named {teamName} was created with ID {idNum}");
+                    PressAnyKey();
+                }
+                else if (intInput == _devTeamRepo.GetDevTeamDirectory().Count + 1)
+                {
+                    Console.WriteLine("Exiting to beginning of program....");
+                    PressAnyKey();
+                    return null;
+                }
+                else
+                {
+                    DevTeam team = _devTeamRepo.GetDevTeamDirectory()[intInput - 1];
+                    bool confirmRun = true;
+                    while (confirmRun)
                     {
-                        PressAnyKey();
-                        return team;
-                    }
-                    else if (confirmInput == "2")
-                    {
-                        Console.WriteLine("Restarting....");
-                        PressAnyKey();
-                        return null;
+                        Console.WriteLine($"You have selected the team named {team.TeamName} with an ID of {team.TeamID}. Is this correct? \n" +
+                            $"1: Yes \n" +
+                            $"2: No");
+                        Console.WriteLine();
+                        string confirmInput = Console.ReadLine();
+                        Console.Clear();
+                        if (confirmInput != "1" && confirmInput != "2")
+                        {
+                            Console.WriteLine("That is not a valid answer. Please try again.");
+                            PressAnyKey();
+                        }
+                        else if (confirmInput == "1")
+                        {
+                            Console.WriteLine($"{team.TeamName} selected.");
+                            PressAnyKey();
+                            return team;
+                        }
+                        else if (confirmInput == "2")
+                        {
+                            Console.WriteLine("Exiting to beginning of program....");
+                            PressAnyKey();
+                            return null;
+                        }
                     }
                 }
             }
             return null;
         }
 
+        // ask user if they want to add devs to team or remove devs from team
         public int ChooseAddOrRemove()
         {
-            // ask user if they want to add or remove developers
             bool isCorrectValue = false;
             int intInput = 0;
             while (!isCorrectValue)
@@ -159,8 +318,9 @@ namespace Komodo_Console
                 Console.WriteLine("1: Add Developers \n" +
                     "2: Remove Developers \n" +
                     "3: Restart");
-                string input = Console.ReadLine();
                 Console.WriteLine();
+                string input = Console.ReadLine();
+                Console.Clear();
                 isCorrectValue = Int32.TryParse(input, out intInput);
                 if (!isCorrectValue)
                 {
@@ -175,176 +335,193 @@ namespace Komodo_Console
             return intInput;
         }
 
-        public int ChooseSearchMethod()
+        // select dev(s) to add to team
+        public void AddDeveloper(DevTeam team)
         {
-
-            // ask user if they want to search by name, ID, or both, and also allow them to see the full list of developers
-            Console.WriteLine("Would you like to find a developer by name, ID, or both?");
-            Console.WriteLine("1: Find by name \n" +
-                "2: Find by ID \n" +
-                "3: Find by both \n" +
-                "4: List all developers");
-            string input = Console.ReadLine();
+            Console.WriteLine("Would you like to add one developer to this team, or multiple at once?");
+            Console.WriteLine("1: One Developer \n" +
+                "2: Multiple Developers \n" +
+                "3: Exit");
             Console.WriteLine();
-            int intInput;
-            bool CorrectValue = Int32.TryParse(input, out intInput);
-            if (!CorrectValue)
-            {
-                InvalidValueMessage();
-            }
-            else
-            {
-                return intInput;
-            }
-
-            return 0;
-        }
-
-        // search by name to add
-        public void AddByName(DevTeam team)
-        {
-            Console.WriteLine("Please enter the name of the developer you would like to add");
             string input = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer addedDev = _devRepo.GetDeveloper(input);
-
-            if (addedDev != null)
+            Console.Clear();
+            switch (input)
             {
-                // check if that developer is already on the team
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.Name.ToLower() == addedDev.Name.ToLower())
-                    {
-                        alreadyOnTeam = true;
-                        Console.WriteLine("That developer is already on this team. Please try again.");
-                        PressAnyKey();
-                        break;
-                    }
-                }
-
-                // if not, add them to the team
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"Adding {addedDev.Name} to {team.TeamName}");
+                case "1":
+                    ListDevelopers(_devRepo.GetDevDirectory());
                     Console.WriteLine();
-                    team.AddDeveloperToTeam(addedDev);
-                }
-            }
-            // exit if that developer does not exist
-            else
-            {
-                Console.WriteLine($"There is no developer with the name {input} in the directory. Please try again.");
-                PressAnyKey();
-            }
-        }
-
-        // search by ID to add
-        public void AddByID(DevTeam team)
-        {
-            Console.WriteLine("Please enter the ID of the developer you would like to add");
-            string input = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer addedDev = null;
-            int inputID = 0;
-            bool isCorrectID = Int32.TryParse(input, out inputID);
-            if (isCorrectID)
-            {
-                addedDev = _devRepo.GetDeveloper(inputID);
-            }
-            else
-            {
-                Console.WriteLine($"{input} was not recognized as a valid ID number. Please try again.");
-                PressAnyKey();
-            }
-
-            if (addedDev != null)
-            {
-                // check if dev with that ID number is already on the team
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.IDNum == addedDev.IDNum)
-                    {
-                        alreadyOnTeam = true;
-                        Console.WriteLine("That developer is already on this team. Please try again.");
-                        PressAnyKey();
-                        break;
-                    }
-                }
-
-                // add developer to team
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"Adding {addedDev.Name} to {team.TeamName}");
-                    team.AddDeveloperToTeam(addedDev);
-                }
-            }
-            // if dev with that ID number does not exist
-            else if (isCorrectID && addedDev == null)
-            {
-                Console.WriteLine($"There is no developer with the ID {inputID} in the directory. Please try again.");
-                PressAnyKey();
-            }
-        }
-
-        public void AddByNameAndID(DevTeam team)
-        {
-            Console.WriteLine("Please enter the name of the developer you would like to add");
-            string nameInput = Console.ReadLine();
-            Console.WriteLine();
-            Console.WriteLine("Please enter the ID of the developer you would like to add");
-            string idInput = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer addedDev = null;
-            int inputID = 0;
-            bool isCorrectID = Int32.TryParse(idInput, out inputID);
-            if (isCorrectID)
-            {
-                addedDev = _devRepo.GetDeveloper(nameInput, inputID);
-            }
-            else
-            {
-                Console.WriteLine($"{idInput} was not recognized as a valid ID number. Please try again.");
-                PressAnyKey();
-            }
-
-            if (addedDev != null)
-            {
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.Name == addedDev.Name && dev.IDNum == addedDev.IDNum)
-                    {
-                        alreadyOnTeam = true;
-                        Console.WriteLine("That developer is already on this team. Please try again.");
-                        PressAnyKey();
-                        break;
-                    }
-                }
-
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"Adding {addedDev.Name} to {team.TeamName}");
+                    Console.WriteLine("Please enter the number corresponding to the developer you would like to add.");
                     Console.WriteLine();
-                    team.AddDeveloperToTeam(addedDev);
-                }
-            }
-            else if (addedDev == null && isCorrectID)
-            {
-                Console.WriteLine($"There is no developer with the name {nameInput} and the ID {inputID} in the directory. Please try again.");
-                PressAnyKey();
+                    string devChoice = Console.ReadLine();
+                    Console.Clear();
+                    bool isNumber = Int32.TryParse(devChoice, out int devChoiceInt);
+                    if (!isNumber)
+                    {
+                        Console.WriteLine("That is not a valid number. Please try again.");
+                        PressAnyKey();
+                        break;
+                    }
+                    else if (devChoiceInt > _devRepo.GetDevDirectory().Count || devChoiceInt < 1)
+                    {
+                        Console.WriteLine("That is not a valid number. Please try again.");
+                        PressAnyKey();
+                        break;
+                    }
+                    else
+                    {
+                        bool isOnTeam = false;
+                        foreach (Developer dev in team.TeamMembers)
+                        {
+                            if (dev.Name == _devRepo.GetDevDirectory()[devChoiceInt - 1].Name && dev.IDNum == _devRepo.GetDevDirectory()[devChoiceInt - 1].IDNum)
+                            {
+                                isOnTeam = true;
+                            }
+                        }
+                        if (isOnTeam)
+                        {
+                            Console.WriteLine("This developer is already on this team. Please try again.");
+                            PressAnyKey();
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Adding {_devRepo.GetDevDirectory()[devChoiceInt - 1].Name} to the team {team.TeamName}");
+                            team.AddDeveloperToTeam(_devRepo.GetDevDirectory()[devChoiceInt - 1]);
+                            PressAnyKey();
+                            break;
+                        }
+                    }
+                case "2":
+                    string devInput = "1";
+                    List<int> devInputs = new List<int>();
+                    while (devInput != "0")
+                    {
+                        ListDevelopers(_devRepo.GetDevDirectory());
+                        Console.WriteLine();
+                        Console.WriteLine("Developers to be added: ");
+                        Console.WriteLine();
+                        foreach (int dev in devInputs)
+                        {
+                            Console.WriteLine(_devRepo.GetDevDirectory()[dev - 1].Name);
+                        }
+                        Console.WriteLine();
+                        Console.WriteLine("Please enter the number corresponding to the developer you would like to add, or input 0 to finish.");
+                        Console.WriteLine();
+                        devInput = Console.ReadLine();
+                        Console.Clear();
+                        bool isNum = Int32.TryParse(devInput, out int intDevInput);
+                        if (!isNum)
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                            continue;
+                        }
+                        else if (intDevInput > _devRepo.GetDevDirectory().Count || intDevInput < 0)
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                            continue;
+                        }
+                        else if (intDevInput != 0)
+                        {
+                            bool isOnTeam = false;
+                            bool isAlreadySelected = false;
+                            foreach (Developer dev in team.TeamMembers)
+                            {
+                                if (dev.Name == _devRepo.GetDevDirectory()[intDevInput - 1].Name && dev.IDNum == _devRepo.GetDevDirectory()[intDevInput - 1].IDNum)
+                                {
+                                    isOnTeam = true;
+                                }
+                            }
+                            foreach (int num in devInputs)
+                            {
+                                if (num == intDevInput)
+                                {
+                                    isAlreadySelected = true;
+                                }
+                            }
+                            if (isOnTeam)
+                            {
+                                Console.WriteLine("That developer is already on this team. Please try again.");
+                                PressAnyKey();
+                                continue;
+                            }
+                            else if (isAlreadySelected)
+                            {
+                                Console.WriteLine("You have already selected that developer to be added. Please try again.");
+                                PressAnyKey();
+                                continue;
+                            }
+                            else
+                            {
+                                devInputs.Add(intDevInput);
+                                Console.WriteLine($"You selected {_devRepo.GetDevDirectory()[intDevInput - 1].Name}");
+                                PressAnyKey();
+                            }
+                        }
+                    }
+                    Console.WriteLine($"The final list of developers to be added to {team.TeamName} is as follows: ");
+                    Console.WriteLine();
+                    foreach (int dev in devInputs)
+                    {
+                        Console.WriteLine(_devRepo.GetDevDirectory()[dev - 1].Name);
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine("Is this correct?");
+                    Console.WriteLine("1: Yes \n" +
+                        "2: No");
+                    Console.WriteLine();
+                    input = Console.ReadLine();
+                    Console.Clear();
+                    bool continueLoop = true;
+                    while (continueLoop)
+                    {
+                        if (input != "1" && input != "2")
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                        }
+                        else if (input == "2")
+                        {
+                            Console.WriteLine("Exiting the adding process....");
+                            PressAnyKey();
+                            break;
+                        }
+                        else
+                        {
+                            foreach (int dev in devInputs)
+                            {
+                                Developer developer = _devRepo.GetDevDirectory()[dev - 1];
+                                team.AddDeveloperToTeam(developer);
+                            }
+
+                            Console.WriteLine($"Added these developers to {team.TeamName}");
+                            PressAnyKey();
+                            break;
+                        }
+                    }
+                    break;
+                case "3":
+                    Console.WriteLine("Exiting the adding process....");
+                    PressAnyKey();
+                    break;
+                default:
+                    InvalidValueMessage();
+                    PressAnyKey();
+                    break;
             }
         }
 
+        // ask if user wants to continue adding devs
         public bool ContinueAdd()
         {
             Console.WriteLine("Would you like to continue adding developers?");
             Console.WriteLine("1: Yes \n" +
                 "2: No");
             bool invalidValue = true;
-            string input = Console.ReadLine();
             Console.WriteLine();
+            string input = Console.ReadLine();
+            Console.Clear();
             while (invalidValue)
             {
                 switch (input)
@@ -365,156 +542,163 @@ namespace Komodo_Console
             return false;
         }
 
-        // search by name to remove
-        public void RemoveByName(DevTeam team)
+        // remove dev(s) from team
+        public void RemoveDeveloper(DevTeam team)
         {
-            Console.WriteLine("Please enter the name of the developer you would like to remove");
+            Console.WriteLine("Would you like to remove one developer to this team, or multiple at once?");
+            Console.WriteLine("1: One Developer \n" +
+                "2: Multiple Developers \n" +
+                "3: Exit");
+            Console.WriteLine();
             string input = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer removedDev = _devRepo.GetDeveloper(input);
-
-            // make sure the dev is on the team already
-            if (removedDev != null)
+            Console.Clear();
+            switch (input)
             {
-                // check if that developer is already on the team
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.Name.ToLower() == removedDev.Name.ToLower())
+                case "1":
+                    ListDevelopers(team.TeamMembers);
+                    Console.WriteLine();
+                    Console.WriteLine("Please enter the number corresponding to the developer you would like to remove.");
+                    Console.WriteLine();
+                    string devChoice = Console.ReadLine();
+                    Console.Clear();
+                    bool isNumber = Int32.TryParse(devChoice, out int devChoiceInt);
+                    if (!isNumber)
                     {
-                        alreadyOnTeam = true;
+                        Console.WriteLine("That is not a valid number. Please try again.");
+                        PressAnyKey();
                         break;
                     }
-                }
+                    else if (devChoiceInt > team.TeamMembers.Count || devChoiceInt < 1)
+                    {
+                        Console.WriteLine("That is not a valid number. Please try again.");
+                        PressAnyKey();
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Removing {team.TeamMembers[devChoiceInt - 1].Name} from the team {team.TeamName}");
+                        team.RemoveDeveloperFromTeam(team.TeamMembers[devChoiceInt - 1]);
+                        PressAnyKey();
+                        break;
+                    }
+                case "2":
+                    string devInput = "1";
+                    List<int> devInputs = new List<int>();
+                    while (devInput != "0")
+                    {
+                        ListDevelopers(team.TeamMembers);
+                        Console.WriteLine();
+                        Console.WriteLine("Developers to be removed: ");
+                        Console.WriteLine();
+                        foreach (int dev in devInputs)
+                        {
+                            Console.WriteLine(team.TeamMembers[dev - 1].Name);
+                        }
+                        Console.WriteLine();
+                        Console.WriteLine("Please enter the number corresponding to the developer you would like to remove, or input 0 to finish.");
+                        Console.WriteLine();
+                        devInput = Console.ReadLine();
+                        Console.Clear();
+                        bool isNum = Int32.TryParse(devInput, out int intDevInput);
+                        if (!isNum)
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                            continue;
+                        }
+                        else if (intDevInput > team.TeamMembers.Count || intDevInput < 0)
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                            continue;
+                        }
+                        else if (intDevInput != 0)
+                        {
+                            bool isAlreadySelected = false;
+                            foreach (int num in devInputs)
+                            {
+                                if (num == intDevInput)
+                                {
+                                    isAlreadySelected = true;
+                                }
+                            }
+                            if (isAlreadySelected)
+                            {
+                                Console.WriteLine("You have already selected that developer to be removed. Please try again.");
+                                PressAnyKey();
+                                continue;
+                            }
+                            else
+                            {
+                                devInputs.Add(intDevInput);
+                                Console.WriteLine($"You selected {team.TeamMembers[intDevInput - 1].Name}");
+                                PressAnyKey();
+                            }
+                        }
+                    }
+                    Console.WriteLine($"The final list of developers to be removed from {team.TeamName} is as follows: ");
+                    Console.WriteLine();
+                    foreach (int dev in devInputs)
+                    {
+                        Console.WriteLine(team.TeamMembers[dev - 1].Name);
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine("Is this correct?");
+                    Console.WriteLine("1: Yes \n" +
+                        "2: No");
+                    Console.WriteLine();
+                    input = Console.ReadLine();
+                    Console.Clear();
+                    bool continueLoop = true;
+                    while (continueLoop)
+                    {
+                        if (input != "1" && input != "2")
+                        {
+                            Console.WriteLine("That is not a valid number. Please try again.");
+                            PressAnyKey();
+                        }
+                        else if (input == "2")
+                        {
+                            Console.WriteLine("Exiting the removing process....");
+                            PressAnyKey();
+                            break;
+                        }
+                        else
+                        {
+                            foreach (int dev in devInputs)
+                            {
+                                List<Developer> originalTeam = team.TeamMembers;
+                                Developer developer = team.TeamMembers[dev - 1];
+                                team.RemoveDeveloperFromTeam(developer);
+                            }
 
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"There is no developer with the name {input} on this team. Please try again.");
+                            Console.WriteLine($"Removed these developers from {team.TeamName}");
+                            PressAnyKey();
+                            break;
+                        }
+                    }
+                    break;
+                case "3":
+                    Console.WriteLine("Exiting the removing process....");
                     PressAnyKey();
-                }
-                else
-                {
-                    team.RemoveDeveloperFromTeam(removedDev);
-                    Console.WriteLine($"{removedDev.Name} has been removed from {team.TeamName}");
+                    break;
+                default:
+                    InvalidValueMessage();
                     PressAnyKey();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"There is no developer with the name {input}. Please try again.");
-                PressAnyKey();
+                    break;
             }
         }
 
-        public void RemoveByID(DevTeam team)
-        {
-            Console.WriteLine("Please enter the ID of the developer you would like to remove");
-            string input = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer removedDev = null;
-            int inputID = 0;
-            bool isCorrectID = Int32.TryParse(input, out inputID);
-            if (isCorrectID)
-            {
-                removedDev = _devRepo.GetDeveloper(inputID);
-            }
-            else
-            {
-                Console.WriteLine($"{input} was not recognized as a valid ID number. Please try again.");
-                PressAnyKey();
-            }
-
-            if (removedDev != null)
-            {
-                // check if that developer is already on the team
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.Name.ToLower() == removedDev.Name.ToLower())
-                    {
-                        alreadyOnTeam = true;
-                        break;
-                    }
-                }
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"There is no developer with the ID {inputID} on this team. Please try again.");
-                    PressAnyKey();
-                }
-                else
-                {
-                    team.RemoveDeveloperFromTeam(removedDev);
-                    Console.WriteLine($"{removedDev.Name} has been removed from {team.TeamName}");
-                    PressAnyKey();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"There is no developer with the ID {inputID}. Please try again.");
-                PressAnyKey();
-            }
-        }
-
-        public void RemoveByNameAndID(DevTeam team)
-        {
-            Console.WriteLine("Please enter the name of the developer you would like to add");
-            string nameInput = Console.ReadLine();
-            Console.WriteLine();
-            Console.WriteLine("Please enter the ID of the developer you would like to add");
-            string idInput = Console.ReadLine();
-            Console.WriteLine();
-            bool alreadyOnTeam = false;
-            Developer removedDev = null;
-            int inputID = 0;
-            bool isCorrectID = Int32.TryParse(idInput, out inputID);
-            if (isCorrectID)
-            {
-                removedDev = _devRepo.GetDeveloper(nameInput, inputID);
-            }
-            else
-            {
-                Console.WriteLine($"{idInput} was not recognized as a valid ID number. Please try again.");
-                PressAnyKey();
-            }
-
-            if (removedDev != null)
-            {
-                // check if that developer is already on the team
-                foreach (Developer dev in team.TeamMembers)
-                {
-                    if (dev.Name.ToLower() == removedDev.Name.ToLower())
-                    {
-                        alreadyOnTeam = true;
-                        break;
-                    }
-                }
-                if (!alreadyOnTeam)
-                {
-                    Console.WriteLine($"There is no developer with the name {nameInput} ID {inputID} on this team. Please try again.");
-                    PressAnyKey();
-                }
-                else
-                {
-                    team.RemoveDeveloperFromTeam(removedDev);
-                    Console.WriteLine($"{removedDev.Name} has been removed from {team.TeamName}");
-                    PressAnyKey();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"There is no developer with the name {nameInput} ID {inputID}. Please try again.");
-                PressAnyKey();
-            }
-        }
-
+        // ask if user wants to continue removing devs
         public bool ContinueRemove()
         {
             Console.WriteLine("Would you like to continue removing developers?");
             Console.WriteLine("1: Yes \n" +
                 "2: No");
             bool invalidValue = true;
-            string input = Console.ReadLine();
             Console.WriteLine();
+            string input = Console.ReadLine();
+            Console.Clear();
             while (invalidValue)
             {
                 switch (input)
@@ -535,79 +719,76 @@ namespace Komodo_Console
             return false;
         }
 
-        // method that specifically lists developers that don't have access to pluralsight
-
+        // method to run everything
         public void Run()
         {
             InitializeDevsAndTeams();
             bool run = true;
+            bool editTeam = true;
             DevTeam team = null;
             int addOrRemove = 0;
-            int searchMethod = 0;
             bool continueProcess = true;
             while (run)
             {
-                continueProcess = true;
-                team = GetTeam();
-                if (team == null)
-                {
-                    continue;
-                }
-                addOrRemove = ChooseAddOrRemove();
-                switch (addOrRemove)
+                editTeam = true;
+                int action = InitialAction();
+                switch (action)
                 {
                     case 1:
-                        while (continueProcess)
+                        while (editTeam)
                         {
-                            searchMethod = ChooseSearchMethod();
-                            switch (searchMethod)
+                            continueProcess = true;
+                            team = GetTeam();
+                            if (team == null)
+                            {
+                                editTeam = false;
+                                continue;
+                            }
+                            addOrRemove = ChooseAddOrRemove();
+                            switch (addOrRemove)
                             {
                                 case 1:
-                                    AddByName(team);
+                                    while (continueProcess)
+                                    {
+                                        AddDeveloper(team);
+                                        continueProcess = ContinueAdd();
+                                        editTeam = continueProcess;
+                                    }
                                     break;
                                 case 2:
-                                    AddByID(team);
+                                    while (continueProcess)
+                                    {
+                                        RemoveDeveloper(team);
+                                        continueProcess = ContinueRemove();
+                                        editTeam = continueProcess;
+                                    }
                                     break;
                                 case 3:
-                                    AddByNameAndID(team);
-                                    break;
-                                case 4:
-                                    ListDevelopers(_devRepo.GetDevDirectory());
+                                    Console.WriteLine("Returning to the start of the program....");
                                     PressAnyKey();
-                                    break;
+                                    editTeam = false;
+                                    continue;
                             }
-                            continueProcess = ContinueAdd();
                         }
                         break;
                     case 2:
-                        while (continueProcess)
-                        {
-                            searchMethod = ChooseSearchMethod();
-                            switch (searchMethod)
-                            {
-                                case 1:
-                                    RemoveByName(team);
-                                    break;
-                                case 2:
-                                    RemoveByID(team);
-                                    break;
-                                case 3:
-                                    RemoveByNameAndID(team);
-                                    break;
-                                case 4:
-                                    ListDevelopers(_devRepo.GetDevDirectory());
-                                    PressAnyKey();
-                                    break;
-                            }
-                            continueProcess = ContinueRemove();
-                        }
+                        CreateDev();
                         break;
                     case 3:
-                        Console.WriteLine("Returning to the start of the program....");
+                        ListDevelopers(_devRepo.GetDevDirectory());
                         PressAnyKey();
-                        continue;
+                        break;
+                    case 4:
+                        ListDevelopersWithoutPluralsight();
+                        PressAnyKey();
+                        break;
+                    case 5:
+                        run = false;
+                        break;
                 }
             }
+            Console.WriteLine("Shutting down....");
+            PressAnyKey();
         }
     }
 }

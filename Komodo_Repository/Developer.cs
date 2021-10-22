@@ -8,10 +8,9 @@ namespace Komodo_Repository
 {
     public class Developer
     {
-        // has name and ID numbers, must be able to identify one developer without mistaking them for another.
+        // has name, ID number, and access to pluralsight
         public string Name { get; set; }
         public int IDNum { get; set; }
-        // need to know if they have access to Pluralsight
         public bool PluralsightAccess { get; set; }
 
         // default constructor
